@@ -3,9 +3,11 @@
  * Plugin Name: Genesis Grid
  * Plugin URI: https://github.com/billerickson/Genesis-Grid-Plugin
  * Description: Use a Grid Loop for sections of your site
- * Version: 1.0
+ * Version: 1.1
  * Author: Bill Erickson
  * Author URI: http://www.billerickson.net
+ * Text Domain: genesis-grid
+ * Domain Path: /languages/
  *
  * This program is free software; you can redistribute it and/or modify it under the terms of the GNU 
  * General Public License version 2, as published by the Free Software Foundation.  You may NOT assume 
@@ -59,7 +61,7 @@ class BE_Genesis_Grid {
 	function init() {
 
 		// Translations
-		load_plugin_textdomain( 'genesis-grid', false, basename( dirname( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'genesis-grid', false, basename( dirname( __FILE__ ) ) . '/languages/' );
 		
 		// Grid Loop Query Args
 		add_action( 'pre_get_posts', array( $this, 'be_grid_loop_query_args' ) );
@@ -107,6 +109,7 @@ class BE_Genesis_Grid {
 		( $query->is_home() && genesis_get_option( 'grid_on_home', 'genesis-grid' ) ) || 
 		( $query->is_category() && genesis_get_option( 'grid_on_category', 'genesis-grid' ) ) || 
 		( $query->is_tag() && genesis_get_option( 'grid_on_tag', 'genesis-grid' ) ) || 
+		( $query->is_author() && genesis_get_option( 'grid_on_author', 'genesis-grid' ) ) || 
 		( $query->is_search() && genesis_get_option( 'grid_on_search', 'genesis-grid' ) )
 		), $query ) )
 			return false;
@@ -306,6 +309,7 @@ function be_register_genesis_grid_settings() {
 				'grid_on_home' => 1,
 				'grid_on_category' => 1,
 				'grid_on_tag' => 1,
+				'grid_on_author' => 1,
 				'grid_on_search' => 1,
 				'feature_image_size' => 'large',
 				'teaser_image_size' => 'medium',
@@ -343,6 +347,7 @@ function be_register_genesis_grid_settings() {
  					'grid_on_home',
  					'grid_on_category',
  					'grid_on_tag',
+ 					'grid_on_author',
  					'grid_on_search',
  				) );
 
@@ -379,6 +384,9 @@ function be_register_genesis_grid_settings() {
 			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_tag' ) . '" id="' . $this->get_field_id( 'grid_on_tag' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_tag' ), true, false ) . ' />
 			<label for="' . $this->get_field_id( 'grid_on_tag' ) . '">' . __( 'Tag Archives', 'genesis-grid' ) . '</label>
 
+			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_author' ) . '" id="' . $this->get_field_id( 'grid_on_author' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_author' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_author' ) . '">' . __( 'Author Archives', 'genesis-grid' ) . '</label>
+
 			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_search' ) . '" id="' . $this->get_field_id( 'grid_on_search' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_search' ), true, false ) . ' />
 			<label for="' . $this->get_field_id( 'grid_on_search' ) . '">' . __( 'Search Results', 'genesis-grid' ) . '</label>
 
@@ -392,19 +400,19 @@ function be_register_genesis_grid_settings() {
 		 */
 		function grid_information() {
 		
-			echo '<p><label for="' . $this->get_field_id( 'features_on_front' ) . '">' . __( 'Features on Front', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'features_on_front' ) . '" id="' . $this->get_field_id( 'features_on_front' ) . '" value="' . $this->get_field_value( 'features_on_front' ) . '" size="3"></p>';
+			echo '<p><label for="' . $this->get_field_id( 'features_on_front' ) . '">' . __( 'Features on First Page', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'features_on_front' ) . '" id="' . $this->get_field_id( 'features_on_front' ) . '" value="' . $this->get_field_value( 'features_on_front' ) . '" size="3"></p>';
 
-			echo '<p><label for="' . $this->get_field_id( 'teasers_on_front' ) . '">' . __( 'Teasers on Front', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'teasers_on_front' ) . '" id="' . $this->get_field_id( 'teasers_on_front' ) . '" value="' . $this->get_field_value( 'teasers_on_front' ) . '" size="3"></p>';
+			echo '<p><label for="' . $this->get_field_id( 'teasers_on_front' ) . '">' . __( 'Teasers on First Page', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'teasers_on_front' ) . '" id="' . $this->get_field_id( 'teasers_on_front' ) . '" value="' . $this->get_field_value( 'teasers_on_front' ) . '" size="3"></p>';
 
-			echo '<p><label for="' . $this->get_field_id( 'features_inside' ) . '">' . __( 'Features Inside', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'features_inside' ) . '" id="' . $this->get_field_id( 'features_inside' ) . '" value="' . $this->get_field_value( 'features_inside' ) . '" size="3"></p>';
+			echo '<p><label for="' . $this->get_field_id( 'features_inside' ) . '">' . __( 'Features on Subsequent Pages', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'features_inside' ) . '" id="' . $this->get_field_id( 'features_inside' ) . '" value="' . $this->get_field_value( 'features_inside' ) . '" size="3"></p>';
 
-			echo '<p><label for="' . $this->get_field_id( 'teasers_inside' ) . '">' . __( 'Teasers Inside', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'teasers_inside' ) . '" id="' . $this->get_field_id( 'teasers_inside' ) . '" value="' . $this->get_field_value( 'teasers_inside' ) . '" size="3"></p>';
+			echo '<p><label for="' . $this->get_field_id( 'teasers_inside' ) . '">' . __( 'Teasers on Subsequent Pages', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'teasers_inside' ) . '" id="' . $this->get_field_id( 'teasers_inside' ) . '" value="' . $this->get_field_value( 'teasers_inside' ) . '" size="3"></p>';
 
 			echo '<p><label for="' . $this->get_field_id( 'teaser_columns' ) . '">' . __( 'Teaser Columns (2-6)', 'genesis-grid' ) . '</label> <input type="text" name="' . $this->get_field_name( 'teaser_columns' ) . '" id="' . $this->get_field_id( 'teaser_columns' ) . '" value="' . $this->get_field_value( 'teaser_columns' ) . '" size="3"></p>';
 			
 			
-			echo '<h4>Image Sizes</h4>';
-			echo '<p>To use this feature, go to Genesis > Theme Settings > Content Archives and check "Include the Featured Image". You can control the size of built-in image sizes (Thumbnail, Medium, and Large) in Settings > Media.</p>';
+			echo '<h4>' . __( 'Image Sizes', 'genesis-grid' ) . '</h4>';
+			echo '<p>' . __( 'To use this feature, go to Genesis > Theme Settings > Content Archives and check "Include the Featured Image". You can control the size of built-in image sizes (Thumbnail, Medium, and Large) in Settings > Media.', 'genesis-grid' ) . '</p>';
 			
 			$sizes = genesis_get_image_sizes();
 			echo '<p>
