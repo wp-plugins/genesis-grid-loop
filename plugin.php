@@ -3,7 +3,7 @@
  * Plugin Name: Genesis Grid
  * Plugin URI: https://github.com/billerickson/Genesis-Grid-Plugin
  * Description: Use a Grid Loop for sections of your site
- * Version: 1.1
+ * Version: 1.2
  * Author: Bill Erickson
  * Author URI: http://www.billerickson.net
  * Text Domain: genesis-grid
@@ -106,21 +106,23 @@ class BE_Genesis_Grid {
 	
 		// Sections of site that should use grid loop	
 		if( ! apply_filters( 'genesis_grid_loop_section', ( 
-		( $query->is_home() && genesis_get_option( 'grid_on_home', 'genesis-grid' ) ) || 
+		( $query->is_home() &&     genesis_get_option( 'grid_on_home', 'genesis-grid' ) ) || 
 		( $query->is_category() && genesis_get_option( 'grid_on_category', 'genesis-grid' ) ) || 
-		( $query->is_tag() && genesis_get_option( 'grid_on_tag', 'genesis-grid' ) ) || 
-		( $query->is_author() && genesis_get_option( 'grid_on_author', 'genesis-grid' ) ) || 
-		( $query->is_search() && genesis_get_option( 'grid_on_search', 'genesis-grid' ) )
+		( $query->is_tag() &&      genesis_get_option( 'grid_on_tag', 'genesis-grid' ) ) || 
+		( $query->is_author() &&   genesis_get_option( 'grid_on_author', 'genesis-grid' ) ) || 
+		( $query->is_date() &&     genesis_get_option( 'grid_on_date', 'genesis-grid' ) ) || 
+		( $query->is_tax() &&      genesis_get_option( 'grid_on_tax', 'genesis-grid' ) ) || 
+		( $query->is_search() &&   genesis_get_option( 'grid_on_search', 'genesis-grid' ) )
 		), $query ) )
 			return false;
 	
 		// Specify pagination
 		$args = array(
 			'features_on_front' => (int) genesis_get_option( 'features_on_front', 'genesis-grid' ),
-			'teasers_on_front' => (int) genesis_get_option( 'teasers_on_front', 'genesis-grid' ),
-			'features_inside' => (int) genesis_get_option( 'features_inside', 'genesis-grid' ),
-			'teasers_inside' => (int) genesis_get_option( 'teasers_inside', 'genesis-grid' ),
-			'teaser_columns' => (int) genesis_get_option( 'teaser_columns', 'genesis-grid' ),
+			'teasers_on_front' =>  (int) genesis_get_option( 'teasers_on_front', 'genesis-grid' ),
+			'features_inside' =>   (int) genesis_get_option( 'features_inside', 'genesis-grid' ),
+			'teasers_inside' =>    (int) genesis_get_option( 'teasers_inside', 'genesis-grid' ),
+			'teaser_columns' =>    (int) genesis_get_option( 'teaser_columns', 'genesis-grid' ),
 		);
 
 		return apply_filters( 'genesis_grid_loop_args', $args, $query );
@@ -182,7 +184,8 @@ class BE_Genesis_Grid {
 	
 			// Teasers
 			} else {
-				$classes[] = $teaser_column . ' teaser';
+				$classes[] = $teaser_column;
+				$classes[] = 'teaser';
 				if( 0 == ( $wp_query->current_post - $grid_args['features_on_front'] ) || 0 == ( $wp_query->current_post - $grid_args['features_on_front'] ) % $grid_args['teaser_columns'] )
 					$classes[] = 'first';
 			}
@@ -196,7 +199,8 @@ class BE_Genesis_Grid {
 	
 			// Teasers
 			} else {
-				$classes[] = $teaser_column . ' teaser';
+				$classes[] = $teaser_column;
+				$classes[] = 'teaser';
 				if( 0 == ( $wp_query->current_post - $grid_args['features_inside'] ) || 0 == ( $wp_query->current_post - $grid_args['features_inside'] ) % $grid_args['teaser_columns'] )
 					$classes[] = 'first';
 			}
@@ -301,18 +305,20 @@ function be_register_genesis_grid_settings() {
 	
 			// Set the default values
 			$default_settings = array(
-				'features_on_front'   => 2,
-				'teasers_on_front' => 8,
-				'features_inside' => 0,
-				'teasers_inside' => 10,
-				'teaser_columns' => 2,
-				'grid_on_home' => 1,
-				'grid_on_category' => 1,
-				'grid_on_tag' => 1,
-				'grid_on_author' => 1,
-				'grid_on_search' => 1,
+				'features_on_front'  => 2,
+				'teasers_on_front'   => 8,
+				'features_inside'    => 0,
+				'teasers_inside'     => 10,
+				'teaser_columns'     => 2,
+				'grid_on_home'       => 1,
+				'grid_on_category'   => 1,
+				'grid_on_date'       => 1,
+				'grid_on_tag'        => 1,
+				'grid_on_tax'        => 1,
+				'grid_on_author'     => 1,
+				'grid_on_search'     => 1,
 				'feature_image_size' => 'large',
-				'teaser_image_size' => 'medium',
+				'teaser_image_size'  => 'medium',
 			);
 	
 			// Create the Admin Page
@@ -346,7 +352,9 @@ function be_register_genesis_grid_settings() {
  				array(
  					'grid_on_home',
  					'grid_on_category',
+ 					'grid_on_date',
  					'grid_on_tag',
+ 					'grid_on_tax',
  					'grid_on_author',
  					'grid_on_search',
  				) );
@@ -373,25 +381,31 @@ function be_register_genesis_grid_settings() {
 		
 			echo '<h4>' . __( 'Enable on:', 'genesis-grid' ) . '</h4>';
 			
-			echo '<p>
+			echo '
 			
-			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_home' ) . '" id="' . $this->get_field_id( 'grid_on_home' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_home' ), true, false ) . ' />
-			<label for="' . $this->get_field_id( 'grid_on_home' ) . '">' . __( 'Blog Home', 'genesis-grid' ) . '</label>
+			<p><input type="checkbox" name="' . $this->get_field_name( 'grid_on_home' ) . '" id="' . $this->get_field_id( 'grid_on_home' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_home' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_home' ) . '">' . __( 'Blog Home', 'genesis-grid' ) . '</label></p>
 
-			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_category' ) . '" id="' . $this->get_field_id( 'grid_on_category' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_category' ), true, false ) . ' />
-			<label for="' . $this->get_field_id( 'grid_on_category' ) . '">' . __( 'Category Archives', 'genesis-grid' ) . '</label>
+			<p><input type="checkbox" name="' . $this->get_field_name( 'grid_on_category' ) . '" id="' . $this->get_field_id( 'grid_on_category' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_category' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_category' ) . '">' . __( 'Category Archives', 'genesis-grid' ) . '</label></p>
 
-			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_tag' ) . '" id="' . $this->get_field_id( 'grid_on_tag' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_tag' ), true, false ) . ' />
-			<label for="' . $this->get_field_id( 'grid_on_tag' ) . '">' . __( 'Tag Archives', 'genesis-grid' ) . '</label>
+			<p><input type="checkbox" name="' . $this->get_field_name( 'grid_on_tag' ) . '" id="' . $this->get_field_id( 'grid_on_tag' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_tag' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_tag' ) . '">' . __( 'Tag Archives', 'genesis-grid' ) . '</label></p>
 
-			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_author' ) . '" id="' . $this->get_field_id( 'grid_on_author' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_author' ), true, false ) . ' />
-			<label for="' . $this->get_field_id( 'grid_on_author' ) . '">' . __( 'Author Archives', 'genesis-grid' ) . '</label>
+			<p><input type="checkbox" name="' . $this->get_field_name( 'grid_on_date' ) . '" id="' . $this->get_field_id( 'grid_on_date' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_date' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_date' ) . '">' . __( 'Date Archives', 'genesis-grid' ) . '</label></p>
 
-			<input type="checkbox" name="' . $this->get_field_name( 'grid_on_search' ) . '" id="' . $this->get_field_id( 'grid_on_search' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_search' ), true, false ) . ' />
-			<label for="' . $this->get_field_id( 'grid_on_search' ) . '">' . __( 'Search Results', 'genesis-grid' ) . '</label>
+			<p><input type="checkbox" name="' . $this->get_field_name( 'grid_on_tax' ) . '" id="' . $this->get_field_id( 'grid_on_tax' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_tax' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_tax' ) . '">' . __( 'Taxonomy Archives', 'genesis-grid' ) . '</label></p>
+
+			<p><input type="checkbox" name="' . $this->get_field_name( 'grid_on_author' ) . '" id="' . $this->get_field_id( 'grid_on_author' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_author' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_author' ) . '">' . __( 'Author Archives', 'genesis-grid' ) . '</label></p>
+
+			<p><input type="checkbox" name="' . $this->get_field_name( 'grid_on_search' ) . '" id="' . $this->get_field_id( 'grid_on_search' ) . '" value="1"' . checked( $this->get_field_value( 'grid_on_search' ), true, false ) . ' />
+			<label for="' . $this->get_field_id( 'grid_on_search' ) . '">' . __( 'Search Results', 'genesis-grid' ) . '</label></p>
 
 	
-			</p>';
+			';
 		}
 
 		/**
