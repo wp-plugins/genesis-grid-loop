@@ -3,7 +3,7 @@
  * Plugin Name: Genesis Grid
  * Plugin URI: https://github.com/billerickson/Genesis-Grid-Plugin
  * Description: Use a Grid Loop for sections of your site
- * Version: 1.2
+ * Version: 1.3
  * Author: Bill Erickson
  * Author URI: http://www.billerickson.net
  * Text Domain: genesis-grid
@@ -168,7 +168,7 @@ class BE_Genesis_Grid {
 	function be_grid_loop_post_classes( $classes ) {
 		global $wp_query;
 		$grid_args = $this->be_grid_loop_pagination();
-		if( ! $grid_args )
+		if( ! ( $grid_args && $wp_query->is_main_query() ) )
 			return $classes;
 			
 		// Convert teaser column to a class
@@ -219,7 +219,7 @@ class BE_Genesis_Grid {
 	function be_grid_loop_image( $image_size ) {
 		global $wp_query;
 		$grid_args = $this->be_grid_loop_pagination();
-		if( ! $grid_args )
+		if( ! ( $grid_args && $wp_query->is_main_query() ) )
 			return $image_size;
 	
 		// Feature
