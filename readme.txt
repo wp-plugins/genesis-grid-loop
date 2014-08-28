@@ -17,7 +17,10 @@ You can also specify the image sizes used for Features and Teasers. I recommend 
 
 Finally, you can specify where the grid loop is used by checking Home, Category Archives, Tag Archives, Taxonomy Archives, Author Archives, and/or Search Results. See the Developers section for more fine-grained control.
 
-[Documentation](https://github.com/billerickson/Genesis-Grid/wiki) | [Support Forum](https://github.com/billerickson/Genesis-Grid/issues)
+[Documentation](https://github.com/billerickson/Genesis-Grid/wiki)
+
+**No support will be provided by the developer**
+
 
 == Installation ==
 
